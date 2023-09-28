@@ -3,10 +3,11 @@ pipeline {
     stages {
         stage ("Verify tooling") {
             steps {
-                sh 
+                sh '''
                     docker info
                     docker version
                     docker compose version
+                '''
             }
         }
         stage ("Clear all running docker containers") {
@@ -25,6 +26,22 @@ pipeline {
                 sh 'make up'
                 sh 'docker compose ps'
             }
+        }
+        stage ("Run composer install") {
+            steps {
+                sh 'docker compose run --rm composer install'
+            }
+        }
+        stage ("Run Tests") {
+            steps {
+                sh 'docker compose run --rm artisan test'
+            }
+        }
+    }
+    post {
+        always {
+            sh 'docker compose down --remove-orphans -v'
+            sh 'docker compose ps'
         }
     }
 }
