@@ -4,34 +4,46 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                // Checkout the code from your version control system (e.g., Git).
                 checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                // Install PHP and Composer
+                sh 'apt-get update && apt-get install -y php-cli php-mbstring composer'
+
+                // Install Laravel project dependencies
+                sh 'composer install'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                // Run PHPUnit tests
+                sh 'php vendor/bin/phpunit'
             }
         }
 
         stage('Build and Deploy') {
             steps {
-                script {
-                    // Build Docker image for Laravel
-                    def laravelImage = docker.build('laravel-app', './var/www/html/laravel-cicd-tutorial')
+                // Build and deploy your Laravel application as needed.
+                // You might use tools like Laravel Envoyer or deploy to a web server.
 
-                    // Push the image to a Docker registry if needed
-                    // laravelImage.push()
-
-                    // Deploy the Docker container
-                    laravelImage.withRun('-p 80:80') {
-                        // Container is running
-                        sh 'docker ps'
-                    }
-                }
+                // Example: Deploy to a remote server using SSH (customize accordingly).
+                sh 'ssh user@your-server "cd /path/to/your/app && git pull && composer install && php artisan migrate"'
             }
         }
     }
 
     post {
         success {
+            // Send a notification or perform actions when the pipeline succeeds.
             echo 'Pipeline succeeded! Send notifications or perform other tasks here.'
         }
         failure {
+            // Send a notification or perform actions when the pipeline fails.
             echo 'Pipeline failed! Send notifications or perform other tasks here.'
         }
     }
