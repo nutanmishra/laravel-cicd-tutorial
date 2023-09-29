@@ -3,36 +3,18 @@ pipeline {
 
     stages {
         stage('Checkout') {
+            steps {stages {
+        stage('Build') {
             steps {
-                // Checkout the code from your version control system (e.g., Git).
-                checkout scm
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                // Install PHP and Composer
-                sh 'apt-get update && apt-get install -y php-cli php-mbstring composer'
-
-                // Install Laravel project dependencies
+                git 'https://github.com/Kennibravo/jenkins-laravel.git'
                 sh 'composer install'
+                sh 'cp .env.example .env'
+                sh 'php artisan key:generate'
             }
         }
-
-        stage('Run Tests') {
+        stage('Test') {
             steps {
-                // Run PHPUnit tests
-                sh 'php vendor/bin/phpunit'
-            }
-        }
-
-        stage('Build and Deploy') {
-            steps {
-                // Build and deploy your Laravel application as needed.
-                // You might use tools like Laravel Envoyer or deploy to a web server.
-
-                // Example: Deploy to a remote server using SSH (customize accordingly).
-                sh 'ssh user@your-server "cd /path/to/your/app && git pull && composer install && php artisan migrate"'
+                sh './vendor/bin/phpunit'
             }
         }
     }
