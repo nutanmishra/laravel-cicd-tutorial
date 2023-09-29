@@ -1,29 +1,18 @@
 pipeline {
     agent any
+
     stages {
-        stage ("Verify tooling") {
+        stage('Build') {
             steps {
-                sh 
-                    docker info
-                    docker version
-                    docker compose version
+                git 'https://github.com/Kennibravo/jenkins-laravel.git'
+                sh 'composer install'
+                sh 'cp .env.example .env'
+                sh 'php artisan key:generate'
             }
         }
-        stage ("Clear all running docker containers") {
+        stage('Test') {
             steps {
-                script {
-                    try {
-                        sh 'docker rm -f ${docker ps  -a -q}'
-                    } catch (Exception e) {
-                        echo 'No running container to clear up...'
-                    }
-                }
-            }
-        }
-        stage ("start docker") {
-            steps {
-                sh 'make up'
-                sh 'docker compose ps'
+                sh './vendor/bin/phpunit'
             }
         }
     }
