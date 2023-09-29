@@ -13,7 +13,7 @@ pipeline {
             steps {
                 sh "sudo chmod +x -R ${env.WORKSPACE}"
                 // Install PHP and Composer
-                sh 'sudo apt-get update && apt-get install -y php-cli php-mbstring composer'
+                sh 'sudo apt-get update && sudo apt-get install -y php-cli php-mbstring composer'
 
                 // Install Laravel project dependencies
                 sh 'composer install'
