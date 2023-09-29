@@ -1,47 +1,38 @@
 pipeline {
     agent any
+
     stages {
-        stage ("Verify tooling") {
+        stage('Checkout') {
             steps {
-                sh '''
-                    docker info
-                    docker version
-                    docker compose version
-                '''
+                checkout scm
             }
         }
-        stage ("Clear all running docker containers") {
+
+        stage('Build and Deploy') {
             steps {
                 script {
-                    try {
-                        sh 'docker rm -f ${docker ps  -a -q}'
-                    } catch (Exception e) {
-                        echo 'No running container to clear up...'
+                    // Build Docker image for Laravel
+                    def laravelImage = docker.build('laravel-app', './var/www/html/laravel-cicd-tutorial')
+
+                    // Push the image to a Docker registry if needed
+                    // laravelImage.push()
+
+                    // Deploy the Docker container
+                    laravelImage.withRun('-p 80:80') {
+                        // Container is running
+                        sh 'docker ps'
                     }
                 }
             }
         }
-        stage ("start docker") {
-            steps {
-                sh 'make up'
-                sh 'docker compose ps'
-            }
-        }
-        stage ("Run composer install") {
-            steps {
-                sh 'docker compose run --rm composer install'
-            }
-        }
-        stage ("Run Tests") {
-            steps {
-                sh 'docker compose run --rm artisan test'
-            }
-        }
     }
+
     post {
-        always {
-            sh 'docker compose down --remove-orphans -v'
-            sh 'docker compose ps'
+        success {
+            echo 'Pipeline succeeded! Send notifications or perform other tasks here.'
+        }
+        failure {
+            echo 'Pipeline failed! Send notifications or perform other tasks here.'
         }
     }
 }
