@@ -3,22 +3,39 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            steps {stages {
-        stage('Build') {
             steps {
-                git 'https://github.com/Kennibravo/jenkins-laravel.git'
-                sh 'composer install'
-                sh 'cp .env.example .env'
-                sh 'php artisan key:generate'
+                // Checkout the code from your version control system (e.g., Git).
+                checkout scm
             }
         }
-        stage('Test') {
+
+        stage('Install Dependencies') {
             steps {
-                sh './vendor/bin/phpunit'
+                // Install PHP and Composer
+                sh 'apt-get update && apt-get install -y php-cli php-mbstring composer'
+
+                // Install Laravel project dependencies
+                sh 'composer install'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                // Run PHPUnit tests
+                sh 'php vendor/bin/phpunit'
+            }
+        }
+
+        stage('Build and Deploy') {
+            steps {
+                // Build and deploy your Laravel application as needed.
+                // You might use tools like Laravel Envoyer or deploy to a web server.
+
+                // Example: Deploy to a remote server using SSH (customize accordingly).
+                sh 'ssh root@103.16.222.38 "cd /var/www/html/laravel_cicd_tutorial && git pull && composer install && php artisan migrate"'
             }
         }
     }
-
     post {
         success {
             // Send a notification or perform actions when the pipeline succeeds.
