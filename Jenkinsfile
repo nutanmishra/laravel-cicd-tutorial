@@ -11,6 +11,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
+                sh "chmod +x -R ${env.WORKSPACE}"
                 // Install PHP and Composer
                 sh 'apt-get update && apt-get install -y php-cli php-mbstring composer'
 
